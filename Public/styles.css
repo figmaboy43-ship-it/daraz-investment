@@ -1,0 +1,118 @@
+:root{
+  --bg:#fbfbfd; --card:#ffffff; --muted:#6b7280; --accent:#0ea5a4; --text:#0f172a; --radius:14px;
+  --maxw:1100px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans Bengali', sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+.app{max-width:var(--maxw);margin:0 auto;padding:12px}
+.header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 6px}
+.header.small{padding:8px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+.logo{width:48px;height:48px}
+.brand-text h1{font-size:18px;margin:0}
+.brand-text .muted{font-size:12px;color:var(--muted)}
+.nav{display:flex;gap:8px;align-items:center}
+.nav a{color:var(--text);text-decoration:none;font-size:15px}
+.btn{background:var(--accent);color:white;padding:8px 12px;border-radius:10px;border:none;cursor:pointer}
+.btn.small{padding:6px 8px;font-size:14px}
+.btn.btn-ghost{background:transparent;color:var(--accent);border:1px solid rgba(14,165,164,0.15)}
+.container{padding:12px 6px}
+.card{background:var(--card);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:0 6px 20px rgba(16,24,40,0.04)}
+.hero{display:grid;grid-template-columns:1fr;gap:12px;align-items:center}
+.hero h2{margin:0 0 8px;font-size:20px}
+.cta{display:flex;gap:8px}
+.grid{display:grid;grid-template-columns:1fr;gap:10px}
+.card-item{padding:12px;border-radius:10px;border:1px solid #f1f5f9}
+.card-title{font-weight:600}
+.card-sub{color:var(--muted);font-size:14px}
+.card-actions{margin-top:8px}
+.footer{padding:12px;color:var(--muted)}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,0.45)}
+.modal .modal-body{background:var(--card);padding:16px;border-radius:10px;max-width:520px}
+.muted{color:var(--muted)}
+.input{width:100%;padding:10px;border-radius:8px;border:1px solid #e6edf0;margin-bottom:8px}
+.mini{padding:8px;border-bottom:1px dashed #eee}
+@media(min-width:900px){
+  .hero{grid-template-columns:1fr 360px}
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .brand-text h1{font-size:20px}
+}
+@media(min-width:1200px){
+  .grid{grid-template-columns:repeat(3,1fr)}
+}
+/* Responsive navbar styles (add to styles.css) */
+
+/* nav layout adjustments */
+.header-responsive { position: relative; gap: 12px; align-items: center; }
+
+/* hamburger button (mobile visible) */
+.nav-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width:44px; height:44px;
+  padding:6px;
+  border-radius:8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  margin-left:8px;
+}
+.hamburger, .hamburger::before, .hamburger::after {
+  display:block;
+  width:22px; height:2px; background:var(--text);
+  border-radius:2px;
+  transition: transform .18s ease, opacity .18s ease;
+  position:relative;
+}
+.hamburger::before, .hamburger::after {
+  content: "";
+  position: absolute;
+  left: 0;
+}
+.hamburger::before { top: -7px; }
+.hamburger::after { top: 7px; }
+
+/* primary nav (mobile collapsed by default) */
+.primary-nav {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 12px;
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(2,6,23,0.12);
+  padding: 12px;
+  min-width: 220px;
+  display: none; /* hidden on small screens until open */
+  z-index: 60;
+  transform-origin: top right;
+}
+
+/* visible state */
+.primary-nav.open { display: block; animation: navPop .12s ease; }
+@keyframes navPop { from { transform: scale(.98); opacity:0 } to { transform: scale(1); opacity:1 } }
+
+/* nav list inside dropdown */
+.primary-nav .nav-list { list-style:none; padding:0; margin:0 0 8px 0; display:flex; flex-direction:column; gap:8px; }
+.primary-nav .nav-list a { text-decoration:none; color:var(--text); padding:8px 6px; border-radius:8px; display:block; }
+
+/* cta buttons row */
+.primary-nav .nav-cta { display:flex; gap:8px; justify-content:stretch; }
+
+/* Desktop: show nav inline and hide hamburger */
+@media(min-width:900px) {
+  .nav-toggle { display: none; }
+  .primary-nav {
+    position: static;
+    display:flex !important;
+    box-shadow: none;
+    background: transparent;
+    padding:0;
+    min-width: auto;
+    align-items:center;
+    gap:12px;
+  }
+  .primary-nav .nav-list { flex-direction: row; gap:12px; }
+  .primary-nav .nav-list a { padding: 0; }
+  .primary-nav .nav-cta { gap:8px; }
+}
