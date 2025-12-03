@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Panel — Daraz Investment</title>
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="config.js"></script>
+</head>
+
+<body>
+  <header class="header small">
+    <a href="index.html" class="brand">
+      <img src="logo.svg" class="logo" />
+      <div class="brand-text"><h1>Admin Panel</h1></div>
+    </a>
+  </header>
+
+  <main class="container card" id="admin-root">
+    <h2>Admin Panel</h2>
+    <p>
+      এখানে আপনি (Demo mode-এ):  
+      প্যাকেজ দেখবেন, ইউজারের পেমেন্ট প্রুফ যাচাই করবেন এবং উইথড্র রিকোয়েস্ট দেখতে পারবেন।
+    </p>
+
+    <div id="admin-content">Checking admin access...</div>
+  </main>
+
+  <footer class="footer small">
+    <div>© ২০২৫ Daraz Investment — All rights reserved</div>
+  </footer>
+
+  <script>
+    const SUPABASE = window.supabase;
+    const CURRENCY = window.APP_CONFIG.CURRENCY;
+
+    async function loadAdminData() {
+      const root = document.getElementById("admin-content");
+
+      const { data:{ session } } = await SUPABASE.auth.getSession();
+      const user = session?.user;
+
+      if (!user) {
+        root.innerHTML = "<p>Please login first.</p>";
+        return;
+      }
+
+      // check user role
+      const { data: profile } = await SUPABASE
+        .from("user_profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      if (!profile || profile.role !== "admin") {
+        root.innerHTML = "<p>❌ You are not an admin.</p>";
+        return;
+      }
+
+      root.innerHTML = `
+        <h3>Admin Actions</h3>
+
+        <button id="view-proof-btn" class="btn">View Payment Proofs</button>
+        <button id="view-withdraw-btn" class="btn btn-ghost">View Withdraw Requests</button>
+
+        <div id="admin-section"></div>
+      `;
+
+      document.getElementById("view-proof-btn").onclick = loadPaymentProofs;
+      document.getElementById("view-withdraw-btn").onclick = loadWithdraws;
+    }
+
+    async function loadPaymentProofs() {
+      const box = document.getElementById("admin-section");
+      box.innerHTML = "<p>Loading payment proofs...</p>";
+
+      const { data } = await SUPABASE
+        .from("payment_proofs")
+        .select("*, purchases(*), user_profiles(*)")
+        .order("created_at", { ascending: false });
+
+      let html = "<h4>Payment Proofs</h4>";
+
+      data?.forEach(p => {
+        html += `
+          <div class="card-item">
+            <strong>TX:</strong> ${p.tx_id || "N/A"}<br>
+            <strong>User:</strong> ${p.user_profiles?.phone || "Unknown"}<br>
+            <strong>Purchase ID:</strong> ${p.purchase_id}<br>
+            <a href="https://undifyifhbraziqxdzti.supabase.co/storage/v1/object/public/${p.storage_path}" target="_blank">
+              View Image
+            </a>
+          </div>
+        `;
+      });
+
+      box.innerHTML = html;
+    }
+
+    async function loadWithdraws() {
+      const box = document.getElementById("admin-section");
+      box.innerHTML = "<p>Loading withdraw requests...</p>";
+
+      const { data } = await SUPABASE
+        .from("withdraw_requests")
+        .select("*, user_profiles(*)")
+        .order("requested_at", { ascending: false });
+
+      let html = "<h4>Withdraw Requests</h4>";
+
+      data?.forEach(w => {
+        html += `
+          <div class="card-item">
+            <strong>User:</strong> ${w.user_profiles?.phone || "Unknown"}<br>
+            <strong>Amount:</strong> ${CURRENCY}${w.amount}<br>
+            <strong>Status:</strong> ${w.status}<br>
+          </div>
+        `;
+      });
+
+      box.innerHTML = html;
+    }
+
+    loadAdminData();
+  </script>
+</body>
+</html>
