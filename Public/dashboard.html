@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard — Daraz Investment</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="config.js"></script>
+</head>
+<body>
+  <header class="header small">
+    <a href="index.html" class="brand">
+      <img src="logo.svg" class="logo" />
+      <div class="brand-text"><h1>My Dashboard</h1></div>
+    </a>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </header>
+
+  <main class="container card" id="dashboard-root">
+    <h2>Dashboard</h2>
+    <div id="dashboard-content">Loading...</div>
+  </main>
+
+  <footer class="footer small">
+    <div>© ২০২৫ Daraz Investment — All rights reserved</div>
+  </footer>
+
+  <script>
+    (async function(){
+      const SUPABASE = window.supabase;
+      const CURRENCY = window.APP_CONFIG.CURRENCY || '৳';
+      const root = document.getElementById('dashboard-content');
+
+      // helper
+      function el(tag, text, cls) {
+        const d = document.createElement(tag);
+        if (text) d.textContent = text;
+        if (cls) d.className = cls;
+        return d;
+      }
+
+      const { data: { session } } = await SUPABASE.auth.getSession();
+      const user = session?.user;
+      if (!user) {
+        root.innerHTML = '<p>অনুগ্রহ করে প্রথমে <a href="index.html">হোম</a> থেকে লগইন করুন।</p>';
+        return;
+      }
+
+      root.innerHTML = '<p>Loading profile and purchases...</p>';
+
+      // load profile
+      const [{ data: profile, error: pErr }, { data: purchases, error: purErr }] = await Promise.all([
+        SUPABASE.from('user_profiles').select('balance,phone').eq('id', user.id).single(),
+        SUPABASE.from('purchases').select('*, packages(*)').eq('user_id', user.id).order('created_at', { ascending: false })
+      ]);
+
+      if (pErr) {
+        root.innerHTML = '<p>Profile load error: ' + (pErr.message || pErr) + '</p>';
+        return;
+      }
+
+      // build UI
+      root.innerHTML = '';
+      const top = document.createElement('div');
+      top.className = 'card';
+      top.style.marginBottom = '12px';
+      top.appendChild(el('div', `Balance: ${CURRENCY}${(profile?.balance || 0)}`, ''));
+      top.appendChild(el('div', `Phone: ${profile?.phone || 'N/A'}`, ''));
+      root.appendChild(top);
+
+      // Purchases
+      const pCard = document.createElement('div');
+      pCard.className = 'card';
+      pCard.innerHTML = '<h3>Your Purchases</h3>';
+      if (!purchases || purchases.length === 0) {
+        pCard.appendChild(el('div', 'No purchases yet.'));
+      } else {
+        purchases.forEach(p => {
+          const row = document.createElement('div');
+          row.className = 'card-item';
+          row.innerHTML = `
+            <div><strong>${p.packages?.name || 'Package #' + p.package_id}</strong></div>
+            <div class="card-sub">${CURRENCY}${p.price_paid} — ${p.status}</div>
+            <div>Ordered: ${new Date(p.created_at).toLocaleString()}</div>
+          `;
+          pCard.appendChild(row);
+        });
+      }
+      root.appendChild(pCard);
+
+      // Withdraw section
+      const wCard = document.createElement('div');
+      wCard.className = 'card';
+      wCard.innerHTML = '<h3>Withdraw</h3>';
+      const input = document.createElement('input');
+      input.className = 'input';
+      input.placeholder = 'Amount';
+      input.type = 'number';
+      input.min = '1';
+      wCard.appendChild(input);
+      const btn = document.createElement('button');
+      btn.className = 'btn';
+      btn.textContent = 'Request Withdraw';
+      wCard.appendChild(btn);
+      const wMsg = document.createElement('div');
+      wCard.appendChild(wMsg);
+
+      btn.onclick = async () => {
+        const amt = Number(input.value);
+        if (!amt || amt <= 0) { wMsg.textContent = 'Invalid amount'; return; }
+        // create withdraw request
+        const { error } = await SUPABASE.from('withdraw_requests').insert([{ user_id: user.id, amount: amt, status: 'pending' }]);
+        if (error) wMsg.textContent = 'Request error: ' + error.message; else { wMsg.textContent = 'Withdraw requested'; input.value = ''; }
+      };
+
+      root.appendChild(wCard);
+
+      // Logout button
+      const logout = document.createElement('button');
+      logout.className = 'btn btn-ghost';
+      logout.textContent = 'Logout';
+      logout.onclick = async () => {
+        await SUPABASE.auth.signOut();
+        location.href = 'index.html';
+      };
+      root.appendChild(logout);
+
+    })();
+  </script>
+</body>
+</html>

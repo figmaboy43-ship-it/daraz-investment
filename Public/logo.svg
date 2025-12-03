@@ -1,0 +1,19 @@
+<!--?xml version="1.0" encoding="UTF-8"?-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+
+  <defs>
+    <linearGradient id="grad" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#0EA5A4"></stop>
+      <stop offset="100%" stop-color="#06B6D4"></stop>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded background -->
+  <rect width="100" height="100" rx="18" fill="url(#grad)"></rect>
+
+  <!-- Upward arrow investment icon -->
+  <path d="M30 60 L50 30 L70 60 Z" fill="#ffffff"></path>
+  
+  <!-- Dot -->
+  <circle cx="50" cy="72" r="6" fill="#ffffff"></circle>
+</svg>
